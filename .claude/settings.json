@@ -1,0 +1,89 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git switch -c:*)",
+      "Bash(git branch:*)",
+
+      "Bash(npm run build:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ci:*)",
+
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+
+      "Read(src/**)",
+      "Read(dist/**)",
+      "Read(*.json)",
+      "Read(*.yml)",
+      "Read(*.md)",
+      "Read(.github/**)",
+      "Write(src/**)",
+      "Write(.github/**)",
+      "Edit(src/**)",
+      "Edit(.github/**)",
+
+      "WebFetch(domain:docs.github.com)",
+      "WebFetch(domain:platform.openai.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:ai.google.dev)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(sed:*)",
+
+      "Bash(git stash:*)",
+      "Bash(git reset:*)",
+      "Bash(git revert:*)",
+      "Bash(git rebase:*)",
+      "Bash(git merge:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+
+      "Bash(npm publish:*)",
+      "Bash(npm version:*)",
+
+      "Write(package.json)",
+      "Write(package-lock.json)",
+      "Write(action.yml)",
+      "Edit(package.json)",
+      "Edit(action.yml)",
+
+      "Write(CLAUDE.md)",
+      "Write(AGENTS.md)",
+      "Edit(CLAUDE.md)",
+      "Edit(AGENTS.md)",
+
+      "Write(**/.gitignore)",
+      "Edit(**/.gitignore)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/secrets*.json)",
+
+      "Read(**/node_modules/**)",
+      "Read(**/coverage/**)",
+      "Write(**/node_modules/**)",
+      "Write(**/coverage/**)",
+
+      "Bash(git push:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)"
+    ]
+  }
+}
