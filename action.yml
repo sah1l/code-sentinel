@@ -1,0 +1,58 @@
+# Created by Claude AI Agent
+name: 'Code Sentinel'
+description: 'AI-powered code review that learns your team patterns and focuses on security, architecture, and performance'
+author: 'Sahil Patel'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  github_token:
+    description: 'GitHub token for API access (required for posting comments)'
+    required: true
+
+  openai_api_key:
+    description: 'OpenAI API key (required if using OpenAI provider)'
+    required: false
+
+  openai_model:
+    description: 'OpenAI model to use'
+    required: false
+    default: 'gpt-4o'
+
+  ollama_base_url:
+    description: 'Ollama server URL (for self-hosted LLM)'
+    required: false
+    default: 'http://localhost:11434'
+
+  ollama_model:
+    description: 'Ollama model to use'
+    required: false
+    default: 'codellama:13b'
+
+  config_path:
+    description: 'Path to .sentinel.yml config file'
+    required: false
+    default: '.sentinel.yml'
+
+  dry_run:
+    description: 'If true, will not post comments (useful for testing)'
+    required: false
+    default: 'false'
+
+outputs:
+  summary:
+    description: 'Review summary text'
+  issues_count:
+    description: 'Total number of issues found'
+  critical_count:
+    description: 'Number of critical issues'
+  warning_count:
+    description: 'Number of warnings'
+  effort_score:
+    description: 'Estimated review effort (1-5)'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

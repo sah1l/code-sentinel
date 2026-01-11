@@ -1,0 +1,104 @@
+# Code Sentinel Configuration Example
+# Copy this file to .sentinel.yml and customize for your project
+
+# LLM Configuration
+llm:
+  # Provider: openai | ollama | anthropic (coming soon)
+  provider: openai
+  # Model to use (provider-specific)
+  model: gpt-4o
+  # For Ollama: specify base URL if not localhost
+  # base_url: http://localhost:11434
+
+# Review Focus Areas
+review:
+  # Categories to include in review
+  categories:
+    - security      # OWASP top 10, secrets, injection
+    - architecture  # SOLID, patterns, coupling
+    - performance   # N+1, memory leaks, bundle size
+    - bugs          # Logic errors, null checks, edge cases
+    - best-practices
+
+  # Minimum severity to report (ignore less severe issues)
+  min_severity: suggestion  # critical | warning | suggestion | nitpick
+
+  # Skip review if effort score is below this threshold
+  skip_if_effort_below: 1  # 1-5 scale
+
+# Files and authors to ignore
+ignore:
+  # Glob patterns for files to skip
+  paths:
+    - "**/*.test.ts"
+    - "**/*.spec.ts"
+    - "**/test/**"
+    - "**/tests/**"
+    - "**/__mocks__/**"
+    - "**/__tests__/**"
+    - "docs/**"
+    - "*.md"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "pnpm-lock.yaml"
+
+  # PR authors to skip (bots, etc.)
+  authors:
+    - dependabot[bot]
+    - renovate[bot]
+    - github-actions[bot]
+
+# Custom instructions for the reviewer
+# These are included in the prompt to guide the LLM
+instructions:
+  - "We use TypeScript strict mode"
+  - "Prefer functional components with hooks in React"
+  - "Always handle loading and error states"
+  - "Use meaningful variable names, no abbreviations"
+
+# Team patterns for consistency checks
+# The reviewer will check if new code follows these patterns
+patterns:
+  - category: naming
+    pattern: "Use camelCase for variables and functions, PascalCase for classes and components"
+    examples:
+      - "const userName = 'John'"
+      - "class UserService {}"
+
+  - category: architecture
+    pattern: "Controllers should only call services, not repositories directly"
+    examples:
+      - "controller -> service -> repository"
+
+  - category: testing
+    pattern: "Use describe/it blocks with clear descriptions"
+    examples:
+      - "describe('UserService', () => { it('should create user', () => {}) })"
+
+  - category: style
+    pattern: "Prefer early returns to reduce nesting"
+
+# Output configuration
+output:
+  # Post a summary comment on the PR
+  summary: true
+
+  # Post inline comments on specific lines
+  inline_comments: true
+
+  # Maximum number of inline comments (to avoid spam)
+  max_inline_comments: 15
+
+  # Add labels to the PR
+  labels:
+    enabled: true
+    security_issue: "security"
+    needs_review: "needs-review"
+    effort_prefix: "effort:"  # Creates labels like "effort:3"
+
+# CLAUDE.md integration
+claude_md:
+  # Automatically load CLAUDE.md for conventions
+  enabled: true
+  # Custom path (auto-detected if not specified)
+  # path: ./CLAUDE.md

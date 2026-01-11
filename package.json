@@ -1,0 +1,52 @@
+{
+  "name": "code-sentinel",
+  "version": "0.1.0",
+  "description": "AI-powered code review GitHub Action that learns your team's patterns",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs",
+    "build:watch": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs --watch",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "github-action",
+    "code-review",
+    "ai",
+    "llm",
+    "openai",
+    "ollama",
+    "automation"
+  ],
+  "author": "Sahil Patel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sah1l/code-sentinel.git"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "ollama": "^0.5.11",
+    "openai": "^4.73.0",
+    "yaml": "^2.6.1",
+    "zod": "^3.23.8",
+    "minimatch": "^10.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.10.2",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
