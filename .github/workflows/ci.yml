@@ -52,6 +52,9 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      # Suppress Sentry telemetry from SDK dependencies
+      SENTRY_DSN: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -109,6 +112,8 @@ jobs:
   test-matrix:
     name: Test (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    env:
+      SENTRY_DSN: ''
     strategy:
       matrix:
         node-version: ['20', '22']

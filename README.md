@@ -3,6 +3,7 @@
 AI-powered code review GitHub Action that learns your team's patterns and focuses on security, architecture, and performance.
 
 [![CI](https://github.com/sah1l/code-sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/sah1l/code-sentinel/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sah1l/code-sentinel/graph/badge.svg)](https://codecov.io/gh/sah1l/code-sentinel)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg)](https://www.typescriptlang.org/)
