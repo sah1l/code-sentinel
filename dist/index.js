@@ -38111,7 +38111,7 @@ var require_github = __commonJS({
 });
 
 // src/index.ts
-var core10 = __toESM(require_core(), 1);
+var core10 = __toESM(require_core());
 
 // node_modules/zod/v3/external.js
 var external_exports = {};
@@ -42231,10 +42231,10 @@ var SentinelConfigSchema = external_exports.object({
 var defaultConfig = SentinelConfigSchema.parse({});
 
 // src/config/loader.ts
-var fs = __toESM(require("node:fs"), 1);
-var path = __toESM(require("node:path"), 1);
-var core = __toESM(require_core(), 1);
-var import_yaml = __toESM(require_dist(), 1);
+var fs = __toESM(require("node:fs"));
+var path = __toESM(require("node:path"));
+var core = __toESM(require_core());
+var import_yaml = __toESM(require_dist());
 async function loadConfig(configPath, workingDir) {
   let config = defaultConfig;
   const fullConfigPath = path.isAbsolute(configPath) ? configPath : path.join(workingDir, configPath);
@@ -42355,8 +42355,8 @@ function mergeWithActionInputs(config) {
 }
 
 // src/engine/context.ts
-var path3 = __toESM(require("node:path"), 1);
-var core2 = __toESM(require_core(), 1);
+var path3 = __toESM(require("node:path"));
+var core2 = __toESM(require_core());
 
 // node_modules/@isaacs/balanced-match/dist/esm/index.js
 var balanced = (a2, b2, str2) => {
@@ -44029,7 +44029,7 @@ var ContextCollector = class {
 };
 
 // src/engine/analyzer.ts
-var core3 = __toESM(require_core(), 1);
+var core3 = __toESM(require_core());
 var ReviewAnalyzer = class {
   constructor(platform, llmProvider, config, contextFiles = []) {
     this.llmProvider = llmProvider;
@@ -44102,7 +44102,7 @@ var ReviewAnalyzer = class {
 };
 
 // src/llm/openai.ts
-var core4 = __toESM(require_core(), 1);
+var core4 = __toESM(require_core());
 
 // node_modules/openai/internal/qs/formats.mjs
 var default_format = "RFC3986";
@@ -50879,7 +50879,7 @@ var OpenAIProvider = class {
 };
 
 // src/llm/ollama.ts
-var core5 = __toESM(require_core(), 1);
+var core5 = __toESM(require_core());
 
 // node_modules/ollama/dist/index.mjs
 var import_node_fs2 = __toESM(require("node:fs"), 1);
@@ -51450,7 +51450,7 @@ var OllamaProvider = class {
 };
 
 // src/llm/anthropic.ts
-var core6 = __toESM(require_core(), 1);
+var core6 = __toESM(require_core());
 
 // node_modules/@anthropic-ai/sdk/version.mjs
 var VERSION2 = "0.32.1";
@@ -54400,7 +54400,7 @@ var AnthropicProvider = class {
 };
 
 // src/llm/gemini.ts
-var core7 = __toESM(require_core(), 1);
+var core7 = __toESM(require_core());
 
 // node_modules/@google/generative-ai/dist/index.mjs
 var SchemaType;
@@ -55427,7 +55427,7 @@ var GeminiProvider = class {
 };
 
 // src/llm/factory.ts
-var core8 = __toESM(require_core(), 1);
+var core8 = __toESM(require_core());
 function createLLMProvider(config) {
   const { provider, model, base_url } = config.llm;
   switch (provider) {
@@ -55614,10 +55614,10 @@ var OutputFormatter = class {
 };
 
 // src/platforms/github/adapter.ts
-var fs4 = __toESM(require("node:fs"), 1);
-var path4 = __toESM(require("node:path"), 1);
-var core9 = __toESM(require_core(), 1);
-var github = __toESM(require_github(), 1);
+var fs4 = __toESM(require("node:fs"));
+var path4 = __toESM(require("node:path"));
+var core9 = __toESM(require_core());
+var github = __toESM(require_github());
 var GitHubAdapter = class {
   name = "github";
   octokit;

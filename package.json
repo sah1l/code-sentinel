@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "AI-powered code review GitHub Action that learns your team's patterns",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs",
     "build:watch": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js --format=cjs --watch",
