@@ -19742,10 +19742,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports2.error = error6;
-    function warning3(message, properties = {}) {
+    function warning4(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports2.warning = warning3;
+    exports2.warning = warning4;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -21455,12 +21455,12 @@ var require_log = __commonJS({
       if (logLevel === "debug")
         console.log(...messages);
     }
-    function warn(logLevel, warning3) {
+    function warn(logLevel, warning4) {
       if (logLevel === "debug" || logLevel === "warn") {
         if (typeof node_process.emitWarning === "function")
-          node_process.emitWarning(warning3);
+          node_process.emitWarning(warning4);
         else
-          console.warn(warning3);
+          console.warn(warning4);
       }
     }
     exports2.debug = debug9;
@@ -24913,9 +24913,9 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning3) => {
+        this.onError = (source, code, message, warning4) => {
           const pos = getErrorPos(source);
-          if (warning3)
+          if (warning4)
             this.warnings.push(new errors.YAMLWarning(pos, code, message));
           else
             this.errors.push(new errors.YAMLParseError(pos, code, message));
@@ -24986,10 +24986,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning3) => {
+            this.directives.add(token.source, (offset, message, warning4) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning3);
+              this.onError(pos, "BAD_DIRECTIVE", message, warning4);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -27014,7 +27014,7 @@ var require_public_api = __commonJS({
       const doc = parseDocument(src, options);
       if (!doc)
         return null;
-      doc.warnings.forEach((warning3) => log.warn(doc.options.logLevel, warning3));
+      doc.warnings.forEach((warning4) => log.warn(doc.options.logLevel, warning4));
       if (doc.errors.length > 0) {
         if (doc.options.logLevel !== "silent")
           throw doc.errors[0];
@@ -55618,11 +55618,97 @@ var fs4 = __toESM(require("node:fs"));
 var path4 = __toESM(require("node:path"));
 var core9 = __toESM(require_core());
 var github = __toESM(require_github());
+
+// src/platforms/github/diff-parser.ts
+function parsePatch(patch) {
+  const result = {
+    validNewLines: /* @__PURE__ */ new Set(),
+    validOldLines: /* @__PURE__ */ new Set(),
+    hunks: []
+  };
+  if (!patch) {
+    return result;
+  }
+  const lines = patch.split("\n");
+  let currentHunk = null;
+  let oldLineNum = 0;
+  let newLineNum = 0;
+  for (const line of lines) {
+    const hunkMatch = line.match(/^@@\s+-(\d+)(?:,(\d+))?\s+\+(\d+)(?:,(\d+))?\s+@@/);
+    if (hunkMatch) {
+      if (currentHunk) {
+        result.hunks.push(currentHunk);
+      }
+      oldLineNum = Number.parseInt(hunkMatch[1], 10);
+      newLineNum = Number.parseInt(hunkMatch[3], 10);
+      const newCount = hunkMatch[4] ? Number.parseInt(hunkMatch[4], 10) : 1;
+      currentHunk = {
+        lines: [],
+        newStart: newLineNum,
+        newCount
+      };
+      continue;
+    }
+    if (!currentHunk) {
+      continue;
+    }
+    if (line.startsWith("+") && !line.startsWith("+++")) {
+      result.validNewLines.add(newLineNum);
+      currentHunk.lines.push({
+        newLine: newLineNum,
+        oldLine: null,
+        type: "add"
+      });
+      newLineNum++;
+    } else if (line.startsWith("-") && !line.startsWith("---")) {
+      result.validOldLines.add(oldLineNum);
+      currentHunk.lines.push({
+        newLine: newLineNum,
+        // Context uses current new line
+        oldLine: oldLineNum,
+        type: "remove"
+      });
+      oldLineNum++;
+    } else if (line.startsWith(" ") || line === "") {
+      result.validNewLines.add(newLineNum);
+      result.validOldLines.add(oldLineNum);
+      currentHunk.lines.push({
+        newLine: newLineNum,
+        oldLine: oldLineNum,
+        type: "context"
+      });
+      oldLineNum++;
+      newLineNum++;
+    }
+  }
+  if (currentHunk) {
+    result.hunks.push(currentHunk);
+  }
+  return result;
+}
+function findNearestValidLine(targetLine, parsedDiff, maxDistance = 3) {
+  if (parsedDiff.validNewLines.has(targetLine)) {
+    return targetLine;
+  }
+  for (let offset = 1; offset <= maxDistance; offset++) {
+    if (parsedDiff.validNewLines.has(targetLine - offset)) {
+      return targetLine - offset;
+    }
+    if (parsedDiff.validNewLines.has(targetLine + offset)) {
+      return targetLine + offset;
+    }
+  }
+  return void 0;
+}
+
+// src/platforms/github/adapter.ts
 var GitHubAdapter = class {
   name = "github";
   octokit;
   context;
   workingDir;
+  /** Map of file path to parsed diff for validating comment line numbers */
+  fileDiffs = /* @__PURE__ */ new Map();
   constructor(token, workingDir = process.cwd()) {
     this.octokit = github.getOctokit(token);
     this.context = github.context;
@@ -55642,14 +55728,19 @@ var GitHubAdapter = class {
       pull_number: prNumber,
       per_page: 100
     });
-    const changedFiles = files.map((f2) => ({
-      filename: f2.filename,
-      status: f2.status,
-      additions: f2.additions,
-      deletions: f2.deletions,
-      patch: f2.patch,
-      previousFilename: f2.previous_filename
-    }));
+    const changedFiles = files.map((f2) => {
+      if (f2.patch) {
+        this.fileDiffs.set(f2.filename, parsePatch(f2.patch));
+      }
+      return {
+        filename: f2.filename,
+        status: f2.status,
+        additions: f2.additions,
+        deletions: f2.deletions,
+        patch: f2.patch,
+        previousFilename: f2.previous_filename
+      };
+    });
     return {
       id: prNumber,
       title: pr2.title,
@@ -55741,20 +55832,53 @@ var GitHubAdapter = class {
       ...this.context.repo,
       pull_number: prNumber
     });
-    const reviewComments = comments.map((c2) => ({
-      path: c2.path,
-      line: c2.line,
-      body: c2.body,
-      side: c2.side
-    }));
+    const validComments = [];
+    let skippedCount = 0;
+    for (const comment of comments) {
+      const parsedDiff = this.fileDiffs.get(comment.path);
+      if (!parsedDiff) {
+        core9.debug(`Skipping comment on ${comment.path}:${comment.line} - no diff info`);
+        skippedCount++;
+        continue;
+      }
+      const validLine = findNearestValidLine(comment.line, parsedDiff, 3);
+      if (validLine === void 0) {
+        core9.debug(
+          `Skipping comment on ${comment.path}:${comment.line} - line not in diff`
+        );
+        skippedCount++;
+        continue;
+      }
+      let body = comment.body;
+      if (validLine !== comment.line) {
+        body = `*(Note: Originally for line ${comment.line})*
+
+${comment.body}`;
+      }
+      validComments.push({
+        path: comment.path,
+        line: validLine,
+        body,
+        side: comment.side
+      });
+    }
+    if (skippedCount > 0) {
+      core9.warning(
+        `Skipped ${skippedCount} comment(s) - line numbers not in PR diff`
+      );
+    }
+    if (validComments.length === 0) {
+      core9.info("No valid inline comments to post (all lines were outside the diff)");
+      return;
+    }
     await this.octokit.rest.pulls.createReview({
       ...this.context.repo,
       pull_number: prNumber,
       commit_id: pr2.head.sha,
       event: "COMMENT",
-      comments: reviewComments
+      comments: validComments
     });
-    core9.info(`Posted ${comments.length} inline comments to PR`);
+    core9.info(`Posted ${validComments.length} inline comments to PR`);
   }
   async addLabels(labels) {
     const prNumber = this.context.payload.pull_request?.number;

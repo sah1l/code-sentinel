@@ -4,6 +4,7 @@ import * as core from '@actions/core';
 import * as github from '@actions/github';
 import { minimatch } from 'minimatch';
 import type { ChangedFile, PlatformAdapter, PullRequest, ReviewComment } from '../types.js';
+import { parsePatch, findNearestValidLine, type ParsedDiff } from './diff-parser.js';
 
 type Octokit = ReturnType<typeof github.getOctokit>;
 
@@ -12,6 +13,8 @@ export class GitHubAdapter implements PlatformAdapter {
   private octokit: Octokit;
   private context: typeof github.context;
   private workingDir: string;
+  /** Map of file path to parsed diff for validating comment line numbers */
+  private fileDiffs: Map<string, ParsedDiff> = new Map();
 
   constructor(token: string, workingDir: string = process.cwd()) {
     this.octokit = github.getOctokit(token);
@@ -37,14 +40,20 @@ export class GitHubAdapter implements PlatformAdapter {
       per_page: 100,
     });
 
-    const changedFiles: ChangedFile[] = files.map((f) => ({
-      filename: f.filename,
-      status: f.status as ChangedFile['status'],
-      additions: f.additions,
-      deletions: f.deletions,
-      patch: f.patch,
-      previousFilename: f.previous_filename,
-    }));
+    const changedFiles: ChangedFile[] = files.map((f) => {
+      // Parse and store the diff for each file for later comment validation
+      if (f.patch) {
+        this.fileDiffs.set(f.filename, parsePatch(f.patch));
+      }
+      return {
+        filename: f.filename,
+        status: f.status as ChangedFile['status'],
+        additions: f.additions,
+        deletions: f.deletions,
+        patch: f.patch,
+        previousFilename: f.previous_filename,
+      };
+    });
 
     return {
       id: prNumber,
@@ -162,22 +171,65 @@ export class GitHubAdapter implements PlatformAdapter {
       pull_number: prNumber,
     });
 
-    const reviewComments = comments.map((c) => ({
-      path: c.path,
-      line: c.line,
-      body: c.body,
-      side: c.side,
-    }));
+    // Validate and filter comments to only include lines in the diff
+    const validComments: { path: string; line: number; body: string; side: string }[] = [];
+    let skippedCount = 0;
+
+    for (const comment of comments) {
+      const parsedDiff = this.fileDiffs.get(comment.path);
+
+      if (!parsedDiff) {
+        // No diff info available - skip this comment
+        core.debug(`Skipping comment on ${comment.path}:${comment.line} - no diff info`);
+        skippedCount++;
+        continue;
+      }
+
+      // Try to find a valid line (exact match or nearby)
+      const validLine = findNearestValidLine(comment.line, parsedDiff, 3);
+
+      if (validLine === undefined) {
+        core.debug(
+          `Skipping comment on ${comment.path}:${comment.line} - line not in diff`
+        );
+        skippedCount++;
+        continue;
+      }
+
+      // Adjust body if line was shifted
+      let body = comment.body;
+      if (validLine !== comment.line) {
+        body = `*(Note: Originally for line ${comment.line})*\n\n${comment.body}`;
+      }
+
+      validComments.push({
+        path: comment.path,
+        line: validLine,
+        body,
+        side: comment.side,
+      });
+    }
+
+    if (skippedCount > 0) {
+      core.warning(
+        `Skipped ${skippedCount} comment(s) - line numbers not in PR diff`
+      );
+    }
+
+    if (validComments.length === 0) {
+      core.info('No valid inline comments to post (all lines were outside the diff)');
+      return;
+    }
 
     await this.octokit.rest.pulls.createReview({
       ...this.context.repo,
       pull_number: prNumber,
       commit_id: pr.head.sha,
       event: 'COMMENT',
-      comments: reviewComments,
+      comments: validComments,
     });
 
-    core.info(`Posted ${comments.length} inline comments to PR`);
+    core.info(`Posted ${validComments.length} inline comments to PR`);
   }
 
   async addLabels(labels: string[]): Promise<void> {
